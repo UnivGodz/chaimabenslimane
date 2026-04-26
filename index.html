@@ -2832,8 +2832,10 @@ function setLang(lang,el){
   // Account rows
   if(themeRows[6]){const lbl=themeRows[6].querySelector('.setting-label strong');const desc=themeRows[6].querySelector('.setting-label span');if(lbl)lbl.textContent=t.settings_edit_profile;if(desc)desc.textContent=t.settings_edit_profile_desc;}
   if(themeRows[7]){const lbl=themeRows[7].querySelector('.setting-label strong');const desc=themeRows[7].querySelector('.setting-label span');if(lbl)lbl.textContent=t.settings_logout;if(desc)desc.textContent=t.settings_logout_desc;}
-  // About
+  // About (settings mini-desc)
   const aboutDesc=document.querySelector('.about-desc');if(aboutDesc)aboutDesc.innerHTML=t.about_desc;
+  // About modal full translation
+  if(typeof renderAboutModal==='function')renderAboutModal(lang);
 
   // === NOTIFICATION PANEL (empty state handled by renderNotifications) ===
 
@@ -3941,9 +3943,277 @@ function insertEmoji(emoji, pickerId) {
 // ═══════════════════════════════════════════════
 // ABOUT & FEEDBACK MODALS
 // ═══════════════════════════════════════════════
+// ── ABOUT MODAL TRANSLATIONS ──────────────────────────────────────────────
+const ABOUT_TRANSLATIONS = {
+  fr: {
+    tagline: 'Plateforme étudiante · Universités algériennes',
+    tab_overview: 'Vue d\'ensemble', tab_features: 'Fonctions',
+    tab_roadmap: 'Roadmap', tab_info: 'Infos',
+    // Overview
+    section_numbers: 'En chiffres',
+    stat_modules_lbl: 'Modules', stat_free_lbl: 'Gratuit', stat_langs_lbl: 'Langues',
+    section_whatisit: 'Qu\'est-ce que UnivGo ?',
+    mission_lbl: 'Mission',
+    mission_val: 'Connecter les étudiants algériens entre eux et centraliser tout ce dont ils ont besoin : cours, annonces, révisions, projets PFE et communication.',
+    audience_lbl: 'Public cible',
+    audience_val: 'Étudiants de licence, master et doctorat des universités d\'Algérie. Interface disponible en français, arabe et anglais.',
+    access_lbl: 'Accès & Sécurité',
+    access_val: 'Connexion sécurisée via matricule étudiant. Données stockées localement en démo, backend cloud en développement.',
+    compat_lbl: 'Compatibilité',
+    compat_val: 'Application web responsive. Fonctionne sur ordinateur, tablette et smartphone via navigateur moderne.',
+    // Features
+    section_modules: 'Modules disponibles',
+    f1_name:'Chat Global', f1_desc:'Discussions en temps réel, filtres par promo, envoi de fichiers et enregistrements vocaux.',
+    f2_name:'Salles', f2_desc:'Espaces thématiques dédiés par matière ou projet, avec quiz intégrés.',
+    f3_name:'Fichiers', f3_desc:'Partage de cours, TDs, examens filtrés par module, année et département.',
+    f4_name:'Annonces', f4_desc:'Bulletins officiels, alertes importantes et objets perdus retrouvés.',
+    f5_name:'Quiz & Révisions', f5_desc:'QCM, Vrai/Faux, questions ouvertes avec score en temps réel.',
+    f6_name:'PFE', f6_desc:'Annuaire des projets de fin d\'études avec encadrants et sujets.',
+    f7_name:'Messages Privés', f7_desc:'DM directs entre étudiants avec envoi de photos et fichiers.',
+    f8_name:'Paramètres', f8_desc:'Thème clair/sombre, langue (FR/AR/EN), notifications personnalisables.',
+    // Roadmap
+    section_roadmap: 'Avancement du projet',
+    badge_done: 'TERMINÉ', badge_progress: 'EN COURS', badge_planned: 'PRÉVU',
+    rm1_text:'Interface principale & navigation', rm1_sub:'Sidebar, panneaux, responsive design',
+    rm2_text:'Système de chat & messagerie', rm2_sub:'Chat global, salles, DM, envoi de fichiers, emojis',
+    rm3_text:'Quiz interactifs & révisions', rm3_sub:'QCM, V/F, questions ouvertes, score en direct',
+    rm4_text:'Authentification & profil étudiant', rm4_sub:'Login par matricule, session, multi-langue',
+    rm5_text:'Backend & base de données cloud', rm5_sub:'API REST, stockage persistant, synchronisation temps réel',
+    rm6_text:'Système de feedback & analytics', rm6_sub:'Collecte d\'avis, statistiques d\'usage',
+    rm7_text:'Application mobile native (Android / iOS)', rm7_sub:'Notifications push, mode hors-ligne',
+    rm8_text:'Emploi du temps & calendrier académique', rm8_sub:'Intégration avec les emplois du temps officiels',
+    rm9_text:'Portail enseignants & administration', rm9_sub:'Comptes dédiés aux enseignants et au personnel',
+    // Info
+    section_techinfo: 'Informations techniques',
+    version_lbl: 'Version', version_val: '1.0 Beta &nbsp;·&nbsp; Build v7 &nbsp;·&nbsp; Avril 2025',
+    tech_lbl: 'Technologies',
+    section_contact: 'Contact & Support',
+    dev_lbl: 'Développeur principal', dev_val: 'Équipe UnivGo &nbsp;·&nbsp; Université de Alger 3',
+    email_lbl: 'Email de contact',
+    bug_lbl: 'Signaler un bug', bug_val: 'ou utilisez le bouton <strong>Avis</strong> dans l\'app.',
+    license_lbl: 'Licence', license_val: 'Usage académique interne · Tous droits réservés © 2025 UnivGo',
+    beta_lbl: 'Note Beta', beta_val: 'Cette version est en cours de développement actif. Des bugs peuvent survenir. Vos retours sont précieux !',
+  },
+  en: {
+    tagline: 'Student platform · Algerian universities',
+    tab_overview: 'Overview', tab_features: 'Features',
+    tab_roadmap: 'Roadmap', tab_info: 'Info',
+    section_numbers: 'By the numbers',
+    stat_modules_lbl: 'Modules', stat_free_lbl: 'Free', stat_langs_lbl: 'Languages',
+    section_whatisit: 'What is UnivGo?',
+    mission_lbl: 'Mission',
+    mission_val: 'Connect Algerian students and centralize everything they need: courses, announcements, revision, final year projects and communication.',
+    audience_lbl: 'Target audience',
+    audience_val: 'Bachelor, master and PhD students at Algerian universities. Interface available in French, Arabic and English.',
+    access_lbl: 'Access & Security',
+    access_val: 'Secure login via student ID. Data stored locally in demo mode, cloud backend in development.',
+    compat_lbl: 'Compatibility',
+    compat_val: 'Responsive web app. Works on desktop, tablet and smartphone via any modern browser.',
+    section_modules: 'Available modules',
+    f1_name:'Global Chat', f1_desc:'Real-time discussions, filters by year, file sharing and voice recordings.',
+    f2_name:'Rooms', f2_desc:'Dedicated themed spaces by subject or project, with built-in quizzes.',
+    f3_name:'Files', f3_desc:'Share courses, exercises and exams filtered by module, year and department.',
+    f4_name:'Announcements', f4_desc:'Official bulletins, important alerts and lost & found items.',
+    f5_name:'Quiz & Revision', f5_desc:'MCQ, True/False, open questions with real-time score.',
+    f6_name:'Final Year Projects', f6_desc:'Directory of final year projects with supervisors and topics.',
+    f7_name:'Private Messages', f7_desc:'Direct DMs between students with photo and file sharing.',
+    f8_name:'Settings', f8_desc:'Light/dark theme, language (FR/AR/EN), customizable notifications.',
+    section_roadmap: 'Project progress',
+    badge_done: 'DONE', badge_progress: 'IN PROGRESS', badge_planned: 'PLANNED',
+    rm1_text:'Main interface & navigation', rm1_sub:'Sidebar, panels, responsive design',
+    rm2_text:'Chat & messaging system', rm2_sub:'Global chat, rooms, DMs, file sharing, emojis',
+    rm3_text:'Interactive quizzes & revision', rm3_sub:'MCQ, T/F, open questions, live score',
+    rm4_text:'Authentication & student profile', rm4_sub:'Login by student ID, session, multi-language',
+    rm5_text:'Backend & cloud database', rm5_sub:'REST API, persistent storage, real-time sync',
+    rm6_text:'Feedback & analytics system', rm6_sub:'Feedback collection, usage statistics',
+    rm7_text:'Native mobile app (Android / iOS)', rm7_sub:'Push notifications, offline mode',
+    rm8_text:'Timetable & academic calendar', rm8_sub:'Integration with official timetables',
+    rm9_text:'Teacher & admin portal', rm9_sub:'Dedicated accounts for teachers and staff',
+    section_techinfo: 'Technical information',
+    version_lbl: 'Version', version_val: '1.0 Beta &nbsp;·&nbsp; Build v7 &nbsp;·&nbsp; April 2025',
+    tech_lbl: 'Technologies',
+    section_contact: 'Contact & Support',
+    dev_lbl: 'Lead developer', dev_val: 'UnivGo Team &nbsp;·&nbsp; University of Algiers 3',
+    email_lbl: 'Contact email',
+    bug_lbl: 'Report a bug', bug_val: 'or use the <strong>Feedback</strong> button in the app.',
+    license_lbl: 'License', license_val: 'Internal academic use · All rights reserved © 2025 UnivGo',
+    beta_lbl: 'Beta note', beta_val: 'This version is under active development. Bugs may occur. Your feedback is invaluable!',
+  },
+  ar: {
+    tagline: 'منصة طلابية · الجامعات الجزائرية',
+    tab_overview: 'نظرة عامة', tab_features: 'الوظائف',
+    tab_roadmap: 'خارطة الطريق', tab_info: 'معلومات',
+    // Overview
+    section_numbers: 'بالأرقام',
+    stat_modules_lbl: 'وحدة', stat_free_lbl: 'مجاني', stat_langs_lbl: 'لغات',
+    section_whatisit: 'ما هو UnivGo؟',
+    mission_lbl: 'الرسالة',
+    mission_val: 'ربط الطلاب الجزائريين ببعضهم وتوحيد كل ما يحتاجونه: المحاضرات، الإعلانات، المراجعة، مشاريع التخرج والتواصل.',
+    audience_lbl: 'الفئة المستهدفة',
+    audience_val: 'طلاب الليسانس، الماستر والدكتوراه في الجامعات الجزائرية. الواجهة متاحة بالفرنسية والعربية والإنجليزية.',
+    access_lbl: 'الوصول والأمان',
+    access_val: 'تسجيل دخول آمن عبر رقم التسجيل. البيانات محفوظة محلياً في النسخة التجريبية، والخادم السحابي قيد التطوير.',
+    compat_lbl: 'التوافق',
+    compat_val: 'تطبيق ويب متجاوب. يعمل على الحاسوب، الجهاز اللوحي والهاتف الذكي عبر أي متصفح حديث.',
+    // Features
+    section_modules: 'الوحدات المتاحة',
+    f1_name:'الدردشة العامة', f1_desc:'نقاشات فورية مع فلاتر حسب الفوج، إرسال الملفات والتسجيلات الصوتية.',
+    f2_name:'الغرف', f2_desc:'فضاءات مخصصة لكل مادة أو مشروع مع اختبارات مدمجة.',
+    f3_name:'الملفات', f3_desc:'مشاركة المحاضرات والتمارين والامتحانات مفلترة حسب الوحدة والسنة والقسم.',
+    f4_name:'الإعلانات', f4_desc:'النشرات الرسمية والتنبيهات المهمة والمفقودات.',
+    f5_name:'الاختبارات والمراجعة', f5_desc:'اختيار متعدد، صح/خطأ، أسئلة مفتوحة مع نتيجة فورية.',
+    f6_name:'مشاريع التخرج', f6_desc:'دليل مشاريع التخرج مع المشرفين والمواضيع.',
+    f7_name:'الرسائل الخاصة', f7_desc:'رسائل مباشرة بين الطلاب مع إرسال الصور والملفات.',
+    f8_name:'الإعدادات', f8_desc:'ثيم فاتح/داكن، اللغة (FR/AR/EN)، إشعارات قابلة للتخصيص.',
+    // Roadmap
+    section_roadmap: 'تقدم المشروع',
+    badge_done: 'مكتمل', badge_progress: 'جارٍ', badge_planned: 'مخطط',
+    rm1_text:'الواجهة الرئيسية والتنقل', rm1_sub:'الشريط الجانبي، الألواح، التصميم المتجاوب',
+    rm2_text:'نظام الدردشة والمراسلة', rm2_sub:'الدردشة العامة، الغرف، الرسائل الخاصة، إرسال الملفات، الرموز التعبيرية',
+    rm3_text:'الاختبارات التفاعلية والمراجعة', rm3_sub:'اختيار متعدد، صح/خطأ، أسئلة مفتوحة، نتيجة مباشرة',
+    rm4_text:'المصادقة وملف الطالب', rm4_sub:'تسجيل الدخول برقم التسجيل، الجلسة، متعدد اللغات',
+    rm5_text:'الخادم الخلفي وقاعدة البيانات السحابية', rm5_sub:'واجهة برمجية REST، تخزين دائم، مزامنة فورية',
+    rm6_text:'نظام التغذية الراجعة والتحليلات', rm6_sub:'جمع الآراء، إحصائيات الاستخدام',
+    rm7_text:'تطبيق جوال أصلي (Android / iOS)', rm7_sub:'إشعارات فورية، وضع عدم الاتصال',
+    rm8_text:'جدول التوقيت والتقويم الأكاديمي', rm8_sub:'التكامل مع الجداول الرسمية',
+    rm9_text:'بوابة الأساتذة والإدارة', rm9_sub:'حسابات مخصصة للأساتذة والموظفين',
+    // Info
+    section_techinfo: 'المعلومات التقنية',
+    version_lbl: 'الإصدار', version_val: '1.0 تجريبي &nbsp;·&nbsp; البناء v7 &nbsp;·&nbsp; أبريل 2025',
+    tech_lbl: 'التقنيات المستخدمة',
+    section_contact: 'التواصل والدعم',
+    dev_lbl: 'المطوّر الرئيسي', dev_val: 'فريق UnivGo &nbsp;·&nbsp; جامعة الجزائر 3',
+    email_lbl: 'البريد الإلكتروني للتواصل',
+    bug_lbl: 'الإبلاغ عن خطأ', bug_val: 'أو استخدم زر <strong>الآراء</strong> داخل التطبيق.',
+    license_lbl: 'الترخيص', license_val: 'استخدام أكاديمي داخلي · جميع الحقوق محفوظة © 2025 UnivGo',
+    beta_lbl: 'ملاحظة النسخة التجريبية', beta_val: 'هذا الإصدار قيد التطوير النشط. قد تظهر بعض الأخطاء. آراؤكم ثمينة!',
+  }
+};
+
+function renderAboutModal(lang) {
+  const a = ABOUT_TRANSLATIONS[lang] || ABOUT_TRANSLATIONS['fr'];
+
+  // Hero tagline
+  const taglineEl = document.querySelector('.about-modal-hero-tagline');
+  if (taglineEl) taglineEl.textContent = a.tagline;
+
+  // Tabs
+  const tabs = document.querySelectorAll('.about-tab');
+  const tabKeys = ['tab_overview','tab_features','tab_roadmap','tab_info'];
+  tabs.forEach((tab, i) => { if (tabKeys[i]) tab.textContent = a[tabKeys[i]]; });
+
+  // ── OVERVIEW ──
+  const overviewTitles = document.querySelectorAll('#about-overview .about-section-title');
+  if (overviewTitles[0]) overviewTitles[0].textContent = a.section_numbers;
+  if (overviewTitles[1]) overviewTitles[1].textContent = a.section_whatisit;
+
+  const statLabels = document.querySelectorAll('#about-overview .stat-lbl');
+  if (statLabels[0]) statLabels[0].textContent = a.stat_modules_lbl;
+  if (statLabels[1]) statLabels[1].textContent = a.stat_free_lbl;
+  if (statLabels[2]) statLabels[2].textContent = a.stat_langs_lbl;
+
+  const overviewRows = document.querySelectorAll('#about-overview .about-info-row');
+  const overviewData = [
+    [a.mission_lbl, a.mission_val],
+    [a.audience_lbl, a.audience_val],
+    [a.access_lbl, a.access_val],
+    [a.compat_lbl, a.compat_val],
+  ];
+  overviewRows.forEach((row, i) => {
+    if (!overviewData[i]) return;
+    const lbl = row.querySelector('.about-info-label');
+    const val = row.querySelector('.about-info-value');
+    if (lbl) lbl.textContent = overviewData[i][0];
+    if (val) val.textContent = overviewData[i][1];
+  });
+
+  // ── FEATURES ──
+  const featTitle = document.querySelector('#about-features .about-section-title');
+  if (featTitle) featTitle.textContent = a.section_modules;
+
+  const featureCards = document.querySelectorAll('#about-features .feature-card');
+  const featData = [
+    [a.f1_name, a.f1_desc],[a.f2_name, a.f2_desc],[a.f3_name, a.f3_desc],[a.f4_name, a.f4_desc],
+    [a.f5_name, a.f5_desc],[a.f6_name, a.f6_desc],[a.f7_name, a.f7_desc],[a.f8_name, a.f8_desc],
+  ];
+  featureCards.forEach((card, i) => {
+    if (!featData[i]) return;
+    const name = card.querySelector('.feature-card-name');
+    const desc = card.querySelector('.feature-card-desc');
+    if (name) name.textContent = featData[i][0];
+    if (desc) desc.textContent = featData[i][1];
+  });
+
+  // ── ROADMAP ──
+  const roadmapTitle = document.querySelector('#about-roadmap .about-section-title');
+  if (roadmapTitle) roadmapTitle.textContent = a.section_roadmap;
+
+  const roadmapItems = document.querySelectorAll('#about-roadmap .roadmap-item');
+  const roadmapData = [
+    {state:'done', text:a.rm1_text, sub:a.rm1_sub},
+    {state:'done', text:a.rm2_text, sub:a.rm2_sub},
+    {state:'done', text:a.rm3_text, sub:a.rm3_sub},
+    {state:'done', text:a.rm4_text, sub:a.rm4_sub},
+    {state:'progress', text:a.rm5_text, sub:a.rm5_sub},
+    {state:'progress', text:a.rm6_text, sub:a.rm6_sub},
+    {state:'planned', text:a.rm7_text, sub:a.rm7_sub},
+    {state:'planned', text:a.rm8_text, sub:a.rm8_sub},
+    {state:'planned', text:a.rm9_text, sub:a.rm9_sub},
+  ];
+  const badgeMap = {done: a.badge_done, progress: a.badge_progress, planned: a.badge_planned};
+  roadmapItems.forEach((item, i) => {
+    if (!roadmapData[i]) return;
+    const badge = item.querySelector('.roadmap-badge');
+    const text = item.querySelector('.roadmap-text');
+    const sub = item.querySelector('.roadmap-sub');
+    if (badge) badge.textContent = badgeMap[roadmapData[i].state] || badge.textContent;
+    if (text) text.textContent = roadmapData[i].text;
+    if (sub) sub.textContent = roadmapData[i].sub;
+  });
+
+  // ── INFO ──
+  const infoTitles = document.querySelectorAll('#about-info .about-section-title');
+  if (infoTitles[0]) infoTitles[0].textContent = a.section_techinfo;
+  if (infoTitles[1]) infoTitles[1].textContent = a.section_contact;
+
+  const infoRows = document.querySelectorAll('#about-info .about-info-row');
+  const infoData = [
+    [a.version_lbl, a.version_val, false],
+    [a.tech_lbl, null, false],
+    [a.dev_lbl, a.dev_val, true],
+    [a.email_lbl, null, false],
+    [a.bug_lbl, a.bug_val, true],
+    [a.license_lbl, a.license_val, true],
+    [a.beta_lbl, a.beta_val, true],
+  ];
+  infoRows.forEach((row, i) => {
+    if (!infoData[i]) return;
+    const lbl = row.querySelector('.about-info-label');
+    const val = row.querySelector('.about-info-value');
+    if (lbl) lbl.textContent = infoData[i][0];
+    if (val && infoData[i][1] !== null) {
+      if (infoData[i][2]) val.innerHTML = infoData[i][1];
+      else val.innerHTML = infoData[i][1];
+    }
+  });
+
+  // Apply RTL direction to the about modal box itself
+  const aboutBox = document.querySelector('.about-modal-box');
+  if (aboutBox) {
+    aboutBox.style.direction = (lang === 'ar') ? 'rtl' : 'ltr';
+    aboutBox.style.textAlign = (lang === 'ar') ? 'right' : '';
+    if (lang === 'ar') {
+      aboutBox.style.fontFamily = "'Noto Sans Arabic', Tahoma, Arial, sans-serif";
+    } else {
+      aboutBox.style.fontFamily = '';
+    }
+  }
+}
+
 function openAboutModal(){
   // reset to first tab
   switchAboutTab('overview', document.querySelector('.about-tab'));
+  renderAboutModal(currentLang);
   document.getElementById('aboutModal').classList.add('open');
 }
 function switchAboutTab(name, el){
